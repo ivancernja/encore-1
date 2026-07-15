@@ -586,8 +586,8 @@ func ensureEncoreGitRemote(dir, appSlug string) {
 func warnNotLoggedIn() {
 	yellow := color.New(color.FgYellow)
 	_, _ = yellow.Fprintln(os.Stderr, "warning: not logged in to Encore, so this app was created locally only and can't be deployed yet.")
-	_, _ = fmt.Fprintln(os.Stderr, "To enable deploys, log in without a browser using an auth key:")
-	_, _ = fmt.Fprintln(os.Stderr, "    encore auth login --auth-key <key>   (or set ENCORE_AUTH_KEY)")
+	_, _ = fmt.Fprintln(os.Stderr, "Log in with: encore auth login")
+	_, _ = fmt.Fprintln(os.Stderr, "For CI or agents (no browser): encore auth login --auth-key <key>, or set ENCORE_AUTH_KEY.")
 }
 
 func addEncoreRemote(root, appID string) {
