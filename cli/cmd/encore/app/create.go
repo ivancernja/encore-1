@@ -245,6 +245,9 @@ func createApp(ctx context.Context, name, template string, lang cmdutil.Language
 
 	_, err = conf.CurrentUser()
 	loggedIn := err == nil
+	if !loggedIn && createAppOnPlatform {
+		warnNotLoggedIn()
+	}
 
 	exCfg, err := parseExampleConfig(name)
 	if err != nil {
@@ -556,6 +559,36 @@ func initGitRepo(path string, app *platform.App) (err error) {
 	}
 
 	return nil
+}
+
+// ensureEncoreGitRemote makes sure dir is a git repository with an "encore"
+// remote pointing at the given app, so `git push encore` works. Unlike
+// initGitRepo it does not create a commit, to avoid rewriting the history of an
+// existing repo being adopted via `encore app init`.
+func ensureEncoreGitRemote(dir, appSlug string) {
+	if _, err := os.Stat(filepath.Join(dir, ".git")); errors.Is(err, fs.ErrNotExist) {
+		cmd := exec.Command("git", "init")
+		cmd.Dir = dir
+		_ = cmd.Run()
+	}
+	// Only add the remote if an "encore" remote isn't already configured.
+	check := exec.Command("git", "remote", "get-url", defaultGitRemoteName)
+	check.Dir = dir
+	if err := check.Run(); err != nil {
+		add := exec.Command("git", "remote", "add", defaultGitRemoteName, defaultGitRemoteURL+appSlug)
+		add.Dir = dir
+		_ = add.Run()
+	}
+}
+
+// warnNotLoggedIn prints a clear, agent-readable message when an app is created
+// without being logged in, so the (often non-interactive) caller knows the app
+// exists only locally and can't be deployed until it authenticates.
+func warnNotLoggedIn() {
+	yellow := color.New(color.FgYellow)
+	_, _ = yellow.Fprintln(os.Stderr, "warning: not logged in to Encore, so this app was created locally only and can't be deployed yet.")
+	_, _ = fmt.Fprintln(os.Stderr, "To enable deploys, log in without a browser using an auth key:")
+	_, _ = fmt.Fprintln(os.Stderr, "    encore auth login --auth-key <key>   (or set ENCORE_AUTH_KEY)")
 }
 
 func addEncoreRemote(root, appID string) {
