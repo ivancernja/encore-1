@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/fatih/color"
 	"golang.org/x/crypto/ssh/terminal"
@@ -66,9 +67,27 @@ func FindAppRootFromDir(dir string) (appRoot, relPath string, err error) {
 func AppRoot() (appRoot, relPath string) {
 	appRoot, relPath, err := MaybeAppRoot()
 	if err != nil {
+		if errors.Is(err, ErrNoEncoreApp) {
+			if dir, gwErr := os.Getwd(); gwErr == nil && LooksLikeUninitializedEncoreApp(dir) {
+				Fatal("this directory has Encore code but isn't initialized as an app.\n\nRun 'encore app init' to initialize it, or 'encore app link <app-id>' to link an existing app.")
+			}
+		}
 		Fatal(err)
 	}
 	return appRoot, relPath
+}
+
+// LooksLikeUninitializedEncoreApp reports whether dir contains Encore code
+// (an encore.dev dependency in go.mod or package.json) without having been
+// initialized as an app. It only inspects dependency manifests to stay cheap.
+func LooksLikeUninitializedEncoreApp(dir string) bool {
+	for _, mf := range []string{"go.mod", "package.json"} {
+		data, err := os.ReadFile(filepath.Join(dir, mf))
+		if err == nil && strings.Contains(string(data), "encore.dev") {
+			return true
+		}
+	}
+	return false
 }
 
 // WorkspaceRoot determines the workspace root by looking for the .git folder in app root or parents to it.
