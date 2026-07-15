@@ -142,8 +142,7 @@ func initializeApp(name string) error {
 		s.Stop()
 	}
 
-	// Make sure the repo has a git repo and an "encore" remote so the app is
-	// actually pushable/deployable after init.
+	// Set up a git repo and the "encore" remote so the app can be pushed after init.
 	if appSlug != "" {
 		ensureEncoreGitRemote(".", appSlug)
 	}

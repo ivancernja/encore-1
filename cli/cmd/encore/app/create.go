@@ -170,9 +170,8 @@ func createApp(ctx context.Context, name, template string, lang cmdutil.Language
 	cyan := color.New(color.FgCyan)
 	green := color.New(color.FgGreen)
 
-	// If the current directory already contains Encore code but hasn't been
-	// initialized as an app, scaffolding a new app in a subdirectory is almost
-	// always a mistake. Point at the in-place commands instead.
+	// The current directory already has Encore code but no encore.app, so steer
+	// to the in-place commands instead of scaffolding a new app in a subdirectory.
 	if cwd, err := os.Getwd(); err == nil {
 		if _, _, rootErr := cmdutil.MaybeAppRoot(); errors.Is(rootErr, cmdutil.ErrNoEncoreApp) && cmdutil.LooksLikeUninitializedEncoreApp(cwd) {
 			return errors.New("this directory already contains Encore code but isn't initialized as an app.\n\nRun 'encore app init' to initialize it in place, or 'encore app link <app-id>' to link an existing app.")
