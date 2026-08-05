@@ -580,13 +580,11 @@ func ensureEncoreGitRemote(dir, appSlug string) {
 	}
 }
 
-// warnNotLoggedIn prints a clear, agent-readable message when an app is created
-// without being logged in, so the (often non-interactive) caller knows the app
-// exists only locally and can't be deployed until it authenticates.
+// warnNotLoggedIn prints an informational note when an app is created without
+// being logged in, so the (often non-interactive) caller knows the app exists
+// only locally and how to link it to Encore Cloud when it wants to deploy there.
 func warnNotLoggedIn() {
-	yellow := color.New(color.FgYellow)
-	_, _ = yellow.Fprintln(os.Stderr, "warning: not logged in to Encore, so this app was created locally only and can't be deployed yet.")
-	_, _ = fmt.Fprintln(os.Stderr, "Log in with: encore auth login")
+	_, _ = fmt.Fprintln(os.Stderr, "Note: this app is not linked to Encore Cloud. To deploy there, run 'encore auth login' and then 'encore app link' to link it.")
 	_, _ = fmt.Fprintln(os.Stderr, "Without a browser: encore auth login --auth-key <key>, or set ENCORE_AUTH_KEY.")
 }
 
